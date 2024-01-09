@@ -6,4 +6,5 @@ SUBDOMAIN, DOMAIN on Dockerfile
 
 
 docker build keycloak .
+
 docker compose up -d
