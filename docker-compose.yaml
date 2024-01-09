@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  keycloak:
+    build: .
+    container_name: keycloak
+    restart: unless-stopped
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - DB_VENDOR=mariadb
+      - DB_ADDR=mariadbsvc
+      - DB_PORT=3369
+      - DB_DATABASE=keycloak
+      - DB_USER=YOURUSERNAME
+      - DB_PASSWORD=YOURPASSWORD
+      - KC_HOSTNAME=subdomain.yourdomain.com
+    volumes:
+      - /etc/letsencrypt/live/${KC_HOSTNAME}:/certs/live/${KC_HOSTNAME}:ro
+      - /etc/letsencrypt/archive/${KC_HOSTNAME}:/certs/archive/${KC_HOSTNAME}:ro
+    ports:
+      - "8443:8443"
+    depends_on:
+      - mariadbsvc
+    networks:
+      - keycloak_network
+
+  mariadbsvc:
+    image: mariadb:latest
+    container_name: mariadb
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=YOURMASTERPASSWORD
+      - MYSQL_DATABASE=keycloak
+      - MYSQL_USER=YOURUSERNAME
+      - MYSQL_PASSWORD=YOURPASSWORD
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - keycloak_network
+    ports:
+      - "3369:3306"
+
+volumes:
+  mariadb_data:
+
+networks:
+  keycloak_network:
+    driver: bridge
